@@ -1,6 +1,6 @@
 # Secure File Services & Access Control
 
-A Samba file server configured with role-based access control, tiered Linux permissions, and least privilege enforcement — built and tested on a live home lab server.
+A Samba file server configured with role-based access control, tiered Linux permissions, and least privilege enforcement, built and tested on a live lab server.
 
 ## Architecture
 
