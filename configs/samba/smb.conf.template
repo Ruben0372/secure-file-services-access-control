@@ -1,0 +1,79 @@
+#======================= Global Settings =======================
+[global]
+    # Server identification
+    workgroup = WORKGROUP
+    server string = <YOUR-SERVER-NAME> Samba Server
+    netbios name = <YOUR-NETBIOS-NAME>
+
+    # Security settings
+    security = user                # Each client authenticates with a username/password
+    map to guest = never           # Reject unknown users (don't fall back to guest)
+    encrypt passwords = yes
+
+    # Protocol settings — block insecure SMB1
+    min protocol = SMB2
+    max protocol = SMB3
+
+    # Performance tuning
+    socket options = TCP_NODELAY IPTOS_LOWDELAY
+    use sendfile = yes
+    aio read size = 16384
+    aio write size = 16384
+    min receivefile size = 16384
+    read raw = yes
+    write raw = yes
+
+    # Logging
+    log file = /var/log/samba/log.%m
+    max log size = 1000
+    log level = 1
+
+    # Network binding — restrict to local and VPN interfaces
+    # Uncomment and set your actual interface names (check with: ip a)
+    # interfaces = lo <LAN-INTERFACE> wg0
+    # bind interfaces only = yes
+
+#======================= Share Definitions =======================
+
+# Admin-only vault for sensitive files
+# Access: samba-admins only
+[AdminVault]
+    comment = Admin Only Storage
+    path = <MOUNT-PATH>/admin-vault
+    browseable = yes
+    read only = no
+    guest ok = no
+    valid users = @samba-admins
+    write list = @samba-admins
+    force group = samba-admins
+    create mask = 0660              # New files: rw-rw----
+    directory mask = 2770           # New dirs: rwxrws--- (setgid preserved)
+
+# Main shared storage for trusted users
+# Access: samba-admins + samba-standard
+[SharedDrive]
+    comment = Main Shared Storage
+    path = <MOUNT-PATH>/shared
+    browseable = yes
+    read only = no
+    guest ok = no
+    valid users = @samba-admins, @samba-standard
+    write list = @samba-admins, @samba-standard
+    force group = samba-standard
+    create mask = 0664              # New files: rw-rw-r--
+    directory mask = 2775           # New dirs: rwxrwsr-x (setgid preserved)
+
+# Media library — guests can read, admins/standard can write
+# Access: all tiers, but guests are read-only
+[MediaLibrary]
+    comment = Media Library (Public Read)
+    path = <MOUNT-PATH>/media
+    browseable = yes
+    read only = no
+    guest ok = no
+    valid users = @samba-admins, @samba-standard, @samba-guests
+    write list = @samba-admins, @samba-standard
+    read list = @samba-guests
+    force group = samba-standard
+    create mask = 0664              # New files: rw-rw-r--
+    directory mask = 2775           # New dirs: rwxrwsr-x (setgid preserved)
